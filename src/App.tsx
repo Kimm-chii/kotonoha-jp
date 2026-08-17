@@ -36,13 +36,17 @@ export default function App() {
   const updateEntry = (id: string, updated: DiaryEntry) => setEntries(prev => prev.map(e => e.id === id ? updated : e));
 
   const handleExport = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ entries }, null, 2));
+    const jsonStr = JSON.stringify({ entries }, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    
     const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("href", url);
     downloadAnchorNode.setAttribute("download", `kotonoha-backup-${new Date().toISOString().split('T')[0]}.json`);
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
-    downloadAnchorNode.remove();
+    document.body.removeChild(downloadAnchorNode);
+    URL.revokeObjectURL(url);
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,6 +122,12 @@ export default function App() {
           <DiaryList entries={filteredEntries} onDelete={deleteEntry} onUpdate={updateEntry} fontFamily={activeFontFamily} />
         </div>
       </main>
+
+      <footer className="text-center pb-8 px-4 mt-auto">
+        <p className="text-xs text-stone-400">
+          Your entries are stored locally. Export your diary regularly to keep a backup.
+        </p>
+      </footer>
     </div>
   );
 }
