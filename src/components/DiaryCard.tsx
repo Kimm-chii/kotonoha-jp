@@ -1,27 +1,46 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trash2, Calendar, Check, X } from 'lucide-react';
+import { Trash2, Calendar, Check, X, ChevronDown } from 'lucide-react';
 import { DiaryEntry } from '../types';
+
+const months = [
+  { value: 1, label: 'January' }, { value: 2, label: 'February' },
+  { value: 3, label: 'March' }, { value: 4, label: 'April' },
+  { value: 5, label: 'May' }, { value: 6, label: 'June' },
+  { value: 7, label: 'July' }, { value: 8, label: 'August' },
+  { value: 9, label: 'September' }, { value: 10, label: 'October' },
+  { value: 11, label: 'November' }, { value: 12, label: 'December' }
+];
 
 export default function DiaryCard({ entry, onDelete, onUpdate, fontFamily }: { entry: DiaryEntry, onDelete: (id: string) => void, onUpdate: (id: string, entry: DiaryEntry) => void, fontFamily: string }) {
   const [isEditingDate, setIsEditingDate] = useState(false);
-  const [editDate, setEditDate] = useState('');
+  const [editYear, setEditYear] = useState<number>(new Date().getFullYear());
+  const [editMonth, setEditMonth] = useState<number>(new Date().getMonth() + 1);
+  const [editDay, setEditDay] = useState<number>(new Date().getDate());
 
   const openDatePicker = () => {
     const d = new Date(entry.date);
-    setEditDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+    setEditYear(d.getFullYear());
+    setEditMonth(d.getMonth() + 1);
+    setEditDay(d.getDate());
     setIsEditingDate(true);
   };
 
   const handleSaveDate = () => {
-    if (!editDate) return;
-    const [year, month, day] = editDate.split('-').map(Number);
     const updatedDate = new Date(entry.date);
-    updatedDate.setFullYear(year, month - 1, day);
+    const maxDay = new Date(editYear, editMonth, 0).getDate();
+    const finalDay = editDay > maxDay ? maxDay : editDay;
+    
+    updatedDate.setFullYear(editYear, editMonth - 1, finalDay);
     
     onUpdate(entry.id, { ...entry, date: updatedDate.toISOString() });
     setIsEditingDate(false);
   };
+
+  useEffect(() => {
+    const maxDay = new Date(editYear, editMonth, 0).getDate();
+    if (editDay > maxDay) setEditDay(maxDay);
+  }, [editYear, editMonth]);
 
   const formattedDate = new Date(entry.date).toLocaleDateString('en-US', {
     weekday: 'long',
@@ -100,7 +119,7 @@ export default function DiaryCard({ entry, onDelete, onUpdate, fontFamily }: { e
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: 10 }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  className="bg-white p-6 rounded-[24px] shadow-2xl border border-stone-200/80 w-full max-w-[320px] pointer-events-auto"
+                  className="bg-white p-6 rounded-[24px] shadow-2xl border border-stone-200/80 w-full max-w-[380px] pointer-events-auto"
                 >
                   <h3 className="text-lg font-serif text-stone-800 mb-5 flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-stone-400" />
@@ -112,12 +131,47 @@ export default function DiaryCard({ entry, onDelete, onUpdate, fontFamily }: { e
                       <label className="block text-xs font-medium text-stone-500 mb-2 uppercase tracking-wide">
                         Select new date
                       </label>
-                      <input
-                        type="date"
-                        value={editDate}
-                        onChange={(e) => setEditDate(e.target.value)}
-                        className="w-full text-stone-700 bg-stone-50 border border-stone-200 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-stone-300 transition-shadow font-medium cursor-pointer text-lg"
-                      />
+                      <div className="flex gap-2">
+                        {/* Month Dropdown */}
+                        <div className="relative flex-[2]">
+                          <select 
+                            value={editMonth} 
+                            onChange={(e) => setEditMonth(Number(e.target.value))}
+                            className="w-full appearance-none bg-stone-50 border border-stone-200 rounded-xl pl-3 pr-8 py-3 focus:outline-none focus:ring-2 focus:ring-stone-300 text-stone-700 font-medium cursor-pointer"
+                          >
+                            {months.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                          </select>
+                          <ChevronDown className="w-4 h-4 text-stone-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
+                        
+                        {/* Day Dropdown */}
+                        <div className="relative flex-1">
+                          <select 
+                            value={editDay} 
+                            onChange={(e) => setEditDay(Number(e.target.value))}
+                            className="w-full appearance-none bg-stone-50 border border-stone-200 rounded-xl pl-3 pr-8 py-3 focus:outline-none focus:ring-2 focus:ring-stone-300 text-stone-700 font-medium cursor-pointer"
+                          >
+                            {Array.from({ length: new Date(editYear, editMonth, 0).getDate() }, (_, i) => i + 1).map(d => (
+                              <option key={d} value={d}>{d}</option>
+                            ))}
+                          </select>
+                          <ChevronDown className="w-4 h-4 text-stone-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
+
+                        {/* Year Dropdown */}
+                        <div className="relative flex-[1.5]">
+                          <select 
+                            value={editYear} 
+                            onChange={(e) => setEditYear(Number(e.target.value))}
+                            className="w-full appearance-none bg-stone-50 border border-stone-200 rounded-xl pl-3 pr-8 py-3 focus:outline-none focus:ring-2 focus:ring-stone-300 text-stone-700 font-medium cursor-pointer"
+                          >
+                            {Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - 10 + i).map(y => (
+                              <option key={y} value={y}>{y}</option>
+                            ))}
+                          </select>
+                          <ChevronDown className="w-4 h-4 text-stone-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
+                      </div>
                     </div>
 
                     <div className="flex gap-3 pt-2">

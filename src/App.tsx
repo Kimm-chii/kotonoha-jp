@@ -81,10 +81,19 @@ export default function App() {
     e.target.value = ''; 
   };
 
-  const filteredEntries = entries.filter(e => 
-    e.japaneseText.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (e.englishText && e.englishText.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredEntries = entries.filter(e => {
+    const q = searchQuery.toLowerCase();
+    const dateStr = new Date(e.date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).toLowerCase();
+
+    return e.japaneseText.toLowerCase().includes(q) ||
+      (e.englishText && e.englishText.toLowerCase().includes(q)) ||
+      dateStr.includes(q);
+  });
 
   const activeFontFamily = fontOptions.find(f => f.id === fontId)?.family || fontOptions[0].family;
 
