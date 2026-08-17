@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+@theme {
+  --font-japanese: "Noto Serif JP", serif;
+  --font-serif: "Noto Serif JP", serif;
+}
