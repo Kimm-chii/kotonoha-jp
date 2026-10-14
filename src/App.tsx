@@ -102,8 +102,8 @@ export default function App() {
   const activeFontFamily = fontOptions.find(f => f.id === fontId)?.family || fontOptions[0].family;
 
   return (
-    <div className="min-h-screen bg-[#FAF9F6] text-stone-800 font-sans relative selection:bg-stone-200">
-      <div className="absolute top-0 left-0 w-full h-[40vh] bg-gradient-to-b from-stone-100 to-[#FAF9F6] -z-10" />
+    <div className="min-h-[calc(var(--sh,1vh)*100)] bg-[#FAF9F6] text-stone-800 font-sans relative selection:bg-stone-200">
+      <div className="absolute top-0 left-0 w-full h-[calc(var(--sh,1vh)*40)] bg-gradient-to-b from-stone-100 to-[#FAF9F6] -z-10" />
       
       <Header />
       
